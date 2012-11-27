@@ -1,4 +1,4 @@
-jesque-spring
+Jesque-Spring
 =============
 
 A extension for Jesque that allows interoperability with Spring the Java framework, the integration was designed thingking in two objectives:

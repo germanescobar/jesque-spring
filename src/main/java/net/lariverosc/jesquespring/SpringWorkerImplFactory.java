@@ -10,6 +10,7 @@ import net.greghaines.jesque.worker.WorkerImpl;
 import net.greghaines.jesque.worker.WorkerListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 
 /**
@@ -45,7 +46,6 @@ public class SpringWorkerImplFactory implements Callable<WorkerImpl>  {
 	@Override
 	public WorkerImpl call() {
 		WorkerImpl temp = new SpringWorkerImpl(this.config, this.queues, this.jobTypes, this.applicationContext);
-
 		temp.addListener(new WorkerListener() {
 			@Override
 			public void onEvent(WorkerEvent event, Worker worker, String queue, net.greghaines.jesque.Job job, Object runner, Object result, Exception ex) {
@@ -73,7 +73,7 @@ public class SpringWorkerImplFactory implements Callable<WorkerImpl>  {
 		return temp;
 	}
 
-	public void setApplicationContext(ApplicationContext applicationContext)  {
+	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
 		this.applicationContext = applicationContext;
 	}
 }

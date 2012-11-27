@@ -3,11 +3,9 @@ package net.lariverosc.jesquespring;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Callable;
 import net.greghaines.jesque.Config;
 import static net.greghaines.jesque.utils.JesqueUtils.map;
 import net.greghaines.jesque.worker.Worker;
-import net.greghaines.jesque.worker.WorkerImpl;
 import net.greghaines.jesque.worker.WorkerPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,18 +37,21 @@ public class JesqueExecutorService implements ApplicationContextAware {
 	}
 
 	public void start() {
+		logger.info("Starting Jesque executor service");
 		queues = new HashSet<String>();
 		queues.add("JESQUE_QUEUE");
 		jobTypes = map();
+
 		coresToUse = coresToUse == 0 ? Runtime.getRuntime().availableProcessors() : coresToUse;
+		
 		SpringWorkerImplFactory workerImpl = new SpringWorkerImplFactory(config, queues, jobTypes);
 		workerImpl.setApplicationContext(applicationContext);
 		worker = new WorkerPool(workerImpl, coresToUse * workersPerCore);
-		Thread thread = new Thread(worker);
-		thread.start();
+		new Thread(worker).start();
 	}
 
 	public void stop() {
+		logger.info("Stoping Jesque executor service");
 		worker.end(true);
 	}
 
