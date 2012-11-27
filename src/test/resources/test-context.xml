@@ -34,7 +34,7 @@
 
 
 
-	<bean id="jesqueClient" class="net.lariverosc.jesquespring.JesqueClient">
+	<bean id="jesqueClient" class="net.greghaines.jesque.client.ClientImpl">
 		<constructor-arg name="config"  ref="jesqueConfig"/>
 	</bean>
 	
