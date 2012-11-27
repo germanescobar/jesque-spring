@@ -63,7 +63,7 @@ The Spring integration can be doing in two ways, depending of your needs you can
 </bean>
 ```
 
-*Define JesqueClient and JesqueWorker as Spring Beans, that executes Jobs that lives within the Spring context, to accomplish that you need to change the ```workerImplFactory``` by the following, and also configure the Jobs wthin Spring:
+* Define JesqueClient and JesqueWorker as Spring Beans, that executes Jobs that lives within the Spring context, to accomplish that you need to change the ```workerImplFactory``` by the following, and also configure the Jobs wthin Spring:
 
 ```xml
 <bean id="workerImplFactory" class="net.lariverosc.jesquespring.SpringWorkerImplFactory">
@@ -93,6 +93,4 @@ public class MockJob implements Runnable {
      //do something
 	}
 }
-
 ```
-
