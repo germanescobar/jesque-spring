@@ -1,31 +1,87 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xmlns:util="http://www.springframework.org/schema/util" 
 	   xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
-       http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.1.xsd">
+       http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.1.xsd
+	   http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.1.xsd">
 	   
+	<bean class="org.springframework.context.support.PropertySourcesPlaceholderConfigurer" >
+		<property name="location"  value="classpath:redis.properties"/>
+		<property name="nullValue" value="" />
+	</bean>
+
+	<bean id="jedisPool" class="redis.clients.jedis.JedisPool">
+		<constructor-arg>
+			<bean class="net.greghaines.jesque.utils.PoolUtils" factory-method="getDefaultPoolConfig" />
+		</constructor-arg>
+		<constructor-arg value="${redis.host}" />
+		<constructor-arg value="${redis.port}" />
+		<constructor-arg value="${redis.timeout}" />
+		<constructor-arg value="${redis.password}" />
+	</bean>
+
+	<bean id="jesqueConfig" class="net.greghaines.jesque.Config">
+		<constructor-arg value="${redis.host}" />
+		<constructor-arg value="${redis.port}" />
+		<constructor-arg value="${redis.timeout}" />
+		<constructor-arg value="${redis.password}" />
+		<constructor-arg value="${redis.namespace}" />
+		<constructor-arg value="${redis.database}" />
+	</bean>
+
+
+
+
+
+	<bean id="jesqueClient" class="net.lariverosc.jesquespring.JesqueClient">
+		<constructor-arg name="config"  ref="jesqueConfig"/>
+	</bean>
+	
+
+	<bean id="workerImplFactory" class="net.lariverosc.jesquespring.SpringWorkerImplFactory">
+		<constructor-arg name="config" ref="jesqueConfig"/>	
+		<constructor-arg name="queues">
+			<util:set set-class="java.util.HashSet">
+				<value>JESQUE_QUEUE</value>
+			</util:set>
+		</constructor-arg> 
+		<constructor-arg name="jobTypes">
+			<util:map map-class="java.util.HashMap">
+				<!--<entry key="pechorin" value="pechorin@hero.org"/>-->
+			</util:map>
+		</constructor-arg>
+	</bean>
+
+
+
+	<bean id="jesqueWorker" class="net.lariverosc.jesquespring.JesqueWorker" init-method="start" destroy-method="stop">
+		<property name="workerImpl" ref="workerImplFactory"/>
+		<property name="numWorkers" value="1" />
+	</bean>
+
+
+
+
+
 	<!--Test jobs definitions-->
 	<bean id="mockJob" class="net.lariverosc.jesquespring.job.MockJob" scope="prototype"/>
 	<bean id="mockJobArgs" class="net.lariverosc.jesquespring.job.MockJobArgs" scope="prototype"/>
 	<bean id="mockJobFail" class="net.lariverosc.jesquespring.job.MockJobFail" scope="prototype"/>
 
 	<!--Jesque DAO's configuration-->
-
 	<bean id="failureDAO" class="net.greghaines.jesque.meta.dao.impl.FailureDAORedisImpl">
 		<constructor-arg ref="jesqueConfig" />
 		<constructor-arg ref="jedisPool" />
 	</bean>
-
 	<bean id="keysDAO" class="net.greghaines.jesque.meta.dao.impl.KeysDAORedisImpl">
 		<constructor-arg ref="jesqueConfig" />
 		<constructor-arg ref="jedisPool" />
 	</bean>
-
 	<bean id="queueInfoDAO" class="net.greghaines.jesque.meta.dao.impl.QueueInfoDAORedisImpl">
 		<constructor-arg ref="jesqueConfig" />
 		<constructor-arg ref="jedisPool" />
 	</bean>
-
 	<bean id="workerInfoDAO" class="net.greghaines.jesque.meta.dao.impl.WorkerInfoDAORedisImpl">
 		<constructor-arg ref="jesqueConfig" />
 		<constructor-arg ref="jedisPool" />

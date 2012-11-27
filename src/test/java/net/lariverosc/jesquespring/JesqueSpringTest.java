@@ -24,7 +24,7 @@ import redis.clients.jedis.JedisPool;
 public class JesqueSpringTest {
 
 	private JesqueClient jesqueClient;
-	private JesqueExecutorService jesqueExecutorService;
+	private JesqueWorker jesqueWorker;
 	private FailureDAO failureDAO;
 	private KeysDAO keysDAO;
 	private QueueInfoDAO queueInfoDAO;
@@ -36,9 +36,9 @@ public class JesqueSpringTest {
 	 */
 	@BeforeClass
 	public void setUp() {
-		ApplicationContext applicationContext = new ClassPathXmlApplicationContext("classpath:jesque-context.xml", "classpath:test-context.xml");
+		ApplicationContext applicationContext = new ClassPathXmlApplicationContext("classpath:test-context.xml");
 		jesqueClient = (JesqueClient) applicationContext.getBean("jesqueClient");
-		jesqueExecutorService = (JesqueExecutorService) applicationContext.getBean("jesqueExecutorService");
+		jesqueWorker = (JesqueWorker) applicationContext.getBean("jesqueWorker");
 		failureDAO = (FailureDAO) applicationContext.getBean("failureDAO");
 		keysDAO = (KeysDAO) applicationContext.getBean("keysDAO");
 		queueInfoDAO = (QueueInfoDAO) applicationContext.getBean("queueInfoDAO");
@@ -51,7 +51,7 @@ public class JesqueSpringTest {
 	 */
 	@BeforeMethod
 	public void cleanUpRedis() {
-		jesqueExecutorService.getWorker().togglePause(false);
+		jesqueWorker.getWorker().togglePause(false);
 		Jedis jedis = jedisPool.getResource();
 		jedis.flushDB();
 		jedisPool.returnResource(jedis);
@@ -62,14 +62,14 @@ public class JesqueSpringTest {
 	 */
 	@Test
 	public void shouldAddJob() {
-		jesqueExecutorService.getWorker().togglePause(true);
+		jesqueWorker.getWorker().togglePause(true);
 		Assert.assertEquals(0, queueInfoDAO.getPendingCount());
 		MockJob.JOB_COUNT = 0;
 		for (int i = 1; i <= 10; i++) {
-			jesqueClient.execute(MockJob.class, new Object[]{});
+			jesqueClient.execute("JESQUE_QUEUE", MockJob.class, new Object[]{});
 			Assert.assertEquals(i, queueInfoDAO.getPendingCount());
 		}
-		jesqueExecutorService.getWorker().togglePause(false);
+		jesqueWorker.getWorker().togglePause(false);
 		waitJob(5000);
 	}
 
@@ -77,16 +77,29 @@ public class JesqueSpringTest {
 	 *
 	 */
 	@Test(timeOut = 5000)
-	public void shouldProcessJobs() {
-		jesqueExecutorService.getWorker().togglePause(true);
+	public void shouldProcessJobsByClass() {
+		jesqueWorker.getWorker().togglePause(true);
 		Assert.assertEquals(0, queueInfoDAO.getPendingCount());
 		MockJob.JOB_COUNT = 0;
 		for (int i = 1; i <= 10; i++) {
-			jesqueClient.execute(MockJob.class, new Object[]{});
+			jesqueClient.execute("JESQUE_QUEUE", MockJob.class, new Object[]{});
 		}
-		jesqueExecutorService.getWorker().togglePause(false);
+		jesqueWorker.getWorker().togglePause(false);
 		waitJob(3000);
-		Assert.assertEquals(10,MockJob.JOB_COUNT);
+		Assert.assertEquals(10, MockJob.JOB_COUNT);
+	}
+
+	@Test(timeOut = 5000)
+	public void shouldProcessJobsByBeanId() {
+		jesqueWorker.getWorker().togglePause(true);
+		Assert.assertEquals(0, queueInfoDAO.getPendingCount());
+		MockJob.JOB_COUNT = 0;
+		for (int i = 1; i <= 10; i++) {
+			jesqueClient.execute("JESQUE_QUEUE", "mockJob", new Object[]{});
+		}
+		jesqueWorker.getWorker().togglePause(false);
+		waitJob(3000);
+		Assert.assertEquals(10, MockJob.JOB_COUNT);
 	}
 
 	/**
@@ -94,21 +107,31 @@ public class JesqueSpringTest {
 	 */
 	@Test
 	public void shouldAddJobWithArguments() {
-		jesqueExecutorService.getWorker().togglePause(true);
+		jesqueWorker.getWorker().togglePause(true);
 		Object[] args = new Object[]{1, 2.3, true, "test", Arrays.asList("inner", 4.5)};
-		jesqueClient.execute(MockJobArgs.class, args);
-		jesqueExecutorService.getWorker().togglePause(false);
-		
+		jesqueClient.execute("JESQUE_QUEUE", MockJobArgs.class, args);
+		jesqueWorker.getWorker().togglePause(false);
+
 	}
 
 	/**
 	 *
 	 */
 	@Test
+	public void shouldAddJobWithEmptyArguments() {
+		jesqueWorker.getWorker().togglePause(true);
+		jesqueClient.execute("JESQUE_QUEUE", MockJob.class, new Object[]{});
+		jesqueWorker.getWorker().togglePause(false);
+
+	}
+	/**
+	 *
+	 */
+	@Test
 	public void shouldRegisterFailJob() {
-		jesqueClient.execute(MockJobFail.class, new Object[]{});
+		jesqueClient.execute("JESQUE_QUEUE", MockJobFail.class, new Object[]{});
 		waitJob(3000);
-		Assert.assertEquals(1,failureDAO.getCount());
+		Assert.assertEquals(1, failureDAO.getCount());
 	}
 
 	/**

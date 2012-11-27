@@ -1,11 +1,8 @@
 package net.lariverosc.jesquespring;
 
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import net.greghaines.jesque.Config;
-import static net.greghaines.jesque.utils.JesqueUtils.map;
+import java.util.concurrent.Callable;
 import net.greghaines.jesque.worker.Worker;
+import net.greghaines.jesque.worker.WorkerImpl;
 import net.greghaines.jesque.worker.WorkerPool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,35 +14,22 @@ import org.springframework.context.ApplicationContextAware;
  *
  * @author Alejandro Riveros Cruz <lariverosc@gmail.com>
  */
-public class JesqueExecutorService implements ApplicationContextAware {
+public class JesqueWorker implements ApplicationContextAware {
 
-	private static final Logger logger = LoggerFactory.getLogger(JesqueExecutorService.class);
-	private Set<String> queues;
-	private Map<String, ? extends Class<? extends Runnable>> jobTypes;
+	private static final Logger logger = LoggerFactory.getLogger(JesqueWorker.class);
 	private int numWorkers = 1;
 	private Worker worker;
-	private Config config;
+	private Callable<WorkerImpl> workerImpl;
 	private ApplicationContext applicationContext;
-
-	/**
-	 *
-	 * 
-	 * @param config 
-	 */
-	public JesqueExecutorService(Config config) {
-		this.config = config;
-	}
 
 	/**
 	 *
 	 */
 	public void start() {
 		logger.info("Starting Jesque executor service");
-		queues = new HashSet<String>();
-		queues.add("JESQUE_QUEUE");
-		jobTypes = map();
-		SpringWorkerImplFactory workerImpl = new SpringWorkerImplFactory(config, queues, jobTypes);
-		workerImpl.setApplicationContext(applicationContext);
+		if (workerImpl instanceof SpringWorkerImplFactory) {
+			((SpringWorkerImplFactory) workerImpl).setApplicationContext(applicationContext);
+		}
 		worker = new WorkerPool(workerImpl, numWorkers);
 		new Thread(worker).start();
 	}
@@ -88,6 +72,14 @@ public class JesqueExecutorService implements ApplicationContextAware {
 	 */
 	public void setWorker(Worker worker) {
 		this.worker = worker;
+	}
+
+	public Callable<WorkerImpl> getWorkerImpl() {
+		return workerImpl;
+	}
+
+	public void setWorkerImpl(Callable<WorkerImpl> workerImpl) {
+		this.workerImpl = workerImpl;
 	}
 
 	@Override
