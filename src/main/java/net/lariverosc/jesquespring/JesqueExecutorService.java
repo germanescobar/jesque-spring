@@ -22,59 +22,70 @@ public class JesqueExecutorService implements ApplicationContextAware {
 	private static final Logger logger = LoggerFactory.getLogger(JesqueExecutorService.class);
 	private Set<String> queues;
 	private Map<String, ? extends Class<? extends Runnable>> jobTypes;
-	private int coresToUse;
-	private int workersPerCore;
+	private int numWorkers = 1;
 	private Worker worker;
 	private Config config;
 	private ApplicationContext applicationContext;
 
 	/**
 	 *
+	 * 
+	 * @param config 
 	 */
 	public JesqueExecutorService(Config config) {
 		this.config = config;
-		workersPerCore = 1;
 	}
 
+	/**
+	 *
+	 */
 	public void start() {
 		logger.info("Starting Jesque executor service");
 		queues = new HashSet<String>();
 		queues.add("JESQUE_QUEUE");
 		jobTypes = map();
-
-		coresToUse = coresToUse == 0 ? Runtime.getRuntime().availableProcessors() : coresToUse;
-		
 		SpringWorkerImplFactory workerImpl = new SpringWorkerImplFactory(config, queues, jobTypes);
 		workerImpl.setApplicationContext(applicationContext);
-		worker = new WorkerPool(workerImpl, coresToUse * workersPerCore);
+		worker = new WorkerPool(workerImpl, numWorkers);
 		new Thread(worker).start();
 	}
 
+	/**
+	 *
+	 */
 	public void stop() {
 		logger.info("Stoping Jesque executor service");
 		worker.end(true);
 	}
 
-	public int getCoresToUse() {
-		return coresToUse;
+	/**
+	 *
+	 * @return
+	 */
+	public int getNumWorkers() {
+		return numWorkers;
 	}
 
-	public void setCoresToUse(int coresToUse) {
-		this.coresToUse = coresToUse;
+	/**
+	 *
+	 * @param numWorkers
+	 */
+	public void setNumWorkers(int numWorkers) {
+		this.numWorkers = numWorkers;
 	}
 
-	public int getWorkersPerCore() {
-		return workersPerCore;
-	}
-
-	public void setWorkersPerCore(int workersPerCore) {
-		this.workersPerCore = workersPerCore;
-	}
-
+	/**
+	 *
+	 * @return
+	 */
 	public Worker getWorker() {
 		return worker;
 	}
 
+	/**
+	 *
+	 * @param worker
+	 */
 	public void setWorker(Worker worker) {
 		this.worker = worker;
 	}

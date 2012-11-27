@@ -73,6 +73,11 @@ public class SpringWorkerImplFactory implements Callable<WorkerImpl>  {
 		return temp;
 	}
 
+	/**
+	 *
+	 * @param applicationContext
+	 * @throws BeansException
+	 */
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
 		this.applicationContext = applicationContext;
 	}
