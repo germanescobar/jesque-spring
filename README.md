@@ -17,7 +17,7 @@ Or use it as a Maven dependency within your project:
 ```xml
 <dependency>
   <groupId>net.lariverosc</groupId>
-  artifactId>jesque-spring</artifactId>
+  <artifactId>jesque-spring</artifactId>
   <version>0.0.1-SNAPSHOT</version>
 </dependency>
 ```
