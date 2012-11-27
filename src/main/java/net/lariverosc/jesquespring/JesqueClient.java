@@ -26,23 +26,23 @@ public class JesqueClient {
 
 	/**
 	 *
-	 * @param clazz 
+	 * @param clazz
 	 * @param args
 	 */
-	public void execute(Class clazz, Object... args) {
+	public void execute(String queue, Class clazz, Object... args) {
 		Job job = new Job(clazz.getName(), args);
-		client.enqueue("JESQUE_QUEUE", job);
+		client.enqueue(queue, job);
 		logger.info("Job {} succesfully enqueued ", clazz.getName());
 	}
 
 	/**
 	 *
-	 * @param beanId 
+	 * @param beanId
 	 * @param args
 	 */
-	public void execute(String beanId, Object... args) {
+	public void execute(String queue, String beanId, Object... args) {
 		Job job = new Job(beanId, args);
-		client.enqueue("JESQUE_QUEUE", job);
+		client.enqueue(queue, job);
 		logger.info("Job {} succesfully enqueued ", beanId);
 	}
 }

@@ -24,7 +24,7 @@ public class SpringWorkerImpl extends WorkerImpl {
 	 * @param config
 	 * @param queues
 	 * @param jobTypes
-	 * @param applicationContext  
+	 * @param applicationContext
 	 */
 	public SpringWorkerImpl(final Config config, final Collection<String> queues, final Map<String, ? extends Class<?>> jobTypes, ApplicationContext applicationContext) {
 		super(config, queues, jobTypes);
@@ -35,15 +35,22 @@ public class SpringWorkerImpl extends WorkerImpl {
 	protected void process(final Job job, final String curQueue) {
 		try {
 			Runnable runnableJob = null;
-			Class clazz = Class.forName(job.getClassName());
-			String[] beanNames = applicationContext.getBeanNamesForType(clazz, true, false);
-			if (applicationContext.containsBeanDefinition(job.getClassName())) {//check bean id
-				runnableJob = (Runnable) applicationContext.getBean(beanNames[0], job.getArgs());
+			if (applicationContext.containsBeanDefinition(job.getClassName())) {
+				runnableJob = (Runnable) applicationContext.getBean(job.getClassName(), job.getArgs());
 			} else {
-				if (beanNames != null && beanNames.length == 1) {
-					runnableJob = (Runnable) applicationContext.getBean(beanNames[0], job.getArgs());
-				} else {
-					System.out.println("Ambigous bean configuration");
+				try {
+					Class clazz = Class.forName(job.getClassName());
+					String[] beanNames = applicationContext.getBeanNamesForType(clazz, true, false);
+					if (applicationContext.containsBeanDefinition(job.getClassName())) {//check bean id
+						runnableJob = (Runnable) applicationContext.getBean(beanNames[0], job.getArgs());
+					} else {
+						if (beanNames != null && beanNames.length == 1) {
+							runnableJob = (Runnable) applicationContext.getBean(beanNames[0], job.getArgs());
+						}
+					}
+				} catch (ClassNotFoundException cnfe) {
+					logger.error("Not beanId or class definition found {}", job.getClassName());
+					throw new Exception("Not beanId or class definition found " + job.getClassName());
 				}
 			}
 			if (runnableJob != null) {
