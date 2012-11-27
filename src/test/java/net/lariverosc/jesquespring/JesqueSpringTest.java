@@ -51,6 +51,7 @@ public class JesqueSpringTest {
 	 */
 	@BeforeMethod
 	public void cleanUpRedis() {
+		jesqueExecutorService.getWorker().togglePause(false);
 		Jedis jedis = jedisPool.getResource();
 		jedis.flushDB();
 		jedisPool.returnResource(jedis);
@@ -96,6 +97,7 @@ public class JesqueSpringTest {
 		jesqueExecutorService.getWorker().togglePause(true);
 		Object[] args = new Object[]{1, 2.3, true, "test", Arrays.asList("inner", 4.5)};
 		jesqueClient.execute(MockJobArgs.class, args);
+		jesqueExecutorService.getWorker().togglePause(false);
 		
 	}
 
@@ -103,9 +105,9 @@ public class JesqueSpringTest {
 	 *
 	 */
 	@Test
-	public void shouldFailJob() {
+	public void shouldRegisterFailJob() {
 		jesqueClient.execute(MockJobFail.class, new Object[]{});
-		waitJob(1000);
+		waitJob(3000);
 		Assert.assertEquals(1,failureDAO.getCount());
 	}
 
