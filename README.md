@@ -50,9 +50,14 @@ The Spring integration can be doing in two ways, depending of your needs you can
 			<value>JESQUE_QUEUE</value>
 		</util:set>
 	</constructor-arg>
-  <constructor-arg name="jobTypes">
-  	<util:map map-class="java.util.HashMap">
-			<entry key="TestAction" value="TestAction.class"/>
+	<constructor-arg name="jobTypes">
+		<util:map map-class="java.util.HashMap">
+			<entry>
+				<key >
+					<value type="java.lang.String">testAction</value>
+				</key>
+				<value type="java.lang.Class">net.lariverosc.jesquespring.job.MockJob</value>
+			</entry>
 		</util:map>
 	</constructor-arg>
 </bean>
