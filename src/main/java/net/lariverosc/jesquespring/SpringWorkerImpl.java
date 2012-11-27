@@ -24,6 +24,7 @@ public class SpringWorkerImpl extends WorkerImpl {
 	 * @param config
 	 * @param queues
 	 * @param jobTypes
+	 * @param applicationContext  
 	 */
 	public SpringWorkerImpl(final Config config, final Collection<String> queues, final Map<String, ? extends Class<?>> jobTypes, ApplicationContext applicationContext) {
 		super(config, queues, jobTypes);

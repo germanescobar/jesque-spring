@@ -26,9 +26,8 @@ public class JesqueClient {
 
 	/**
 	 *
-	 * @param className
+	 * @param clazz 
 	 * @param args
-	 * @return
 	 */
 	public void execute(Class clazz, Object... args) {
 		Job job = new Job(clazz.getName(), args);
@@ -38,9 +37,8 @@ public class JesqueClient {
 
 	/**
 	 *
-	 * @param className
+	 * @param beanId 
 	 * @param args
-	 * @return
 	 */
 	public void execute(String beanId, Object... args) {
 		Job job = new Job(beanId, args);

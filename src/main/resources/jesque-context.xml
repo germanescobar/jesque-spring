@@ -5,13 +5,29 @@
 	   xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.1.xsd">
 	
-	<context:property-placeholder/>
+	<bean class="org.springframework.context.support.PropertySourcesPlaceholderConfigurer" >
+		<property name="location"  value="classpath:redis.properties"/>
+		<property name="nullValue" value="" />
+	</bean>
 
-	<bean id="jesqueConfigFactory" class="net.lariverosc.jesquespring.JesqueConfigFactory">
-		<property name="uri" value="${REDISTOGO_URL:localhost}" />
-	</bean>  
+	<bean id="jedisPool" class="redis.clients.jedis.JedisPool">
+		<constructor-arg>
+			<bean class="net.greghaines.jesque.utils.PoolUtils" factory-method="getDefaultPoolConfig" />
+		</constructor-arg>
+		<constructor-arg value="${redis.host}" />
+		<constructor-arg value="${redis.port}" />
+		<constructor-arg value="${redis.timeout}" />
+		<constructor-arg value="${redis.password}" />
+	</bean>
 
-	<bean id="jesqueConfig" factory-bean="jesqueConfigFactory" factory-method="create"/>
+	<bean id="jesqueConfig" class="net.greghaines.jesque.Config">
+		<constructor-arg value="${redis.host}" />
+		<constructor-arg value="${redis.port}" />
+		<constructor-arg value="${redis.timeout}" />
+		<constructor-arg value="${redis.password}" />
+		<constructor-arg value="${redis.namespace}" />
+		<constructor-arg value="${redis.database}" />
+	</bean>
 
 	<bean id="jesqueClient" class="net.lariverosc.jesquespring.JesqueClient">
 		<constructor-arg name="config"  ref="jesqueConfig"/>
@@ -19,8 +35,7 @@
 
 	<bean id="jesqueExecutorService" class="net.lariverosc.jesquespring.JesqueExecutorService" init-method="start" destroy-method="stop">
 		<constructor-arg name="config"  ref="jesqueConfig"/>
-		<property name="coresToUse" value="1" />
-		<property name="workersPerCore" value="1" />
+		<property name="numWorkers" value="1" />
 	</bean>
 
 </beans>

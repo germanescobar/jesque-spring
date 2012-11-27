@@ -16,17 +16,29 @@ public class MockJobArgs implements Runnable {
 	private final Boolean b;
 	private final String s;
 	private final List<Object> l;
+	public static Object[] args;
 
+	/**
+	 *
+	 * @param i
+	 * @param d
+	 * @param b
+	 * @param s
+	 * @param l
+	 */
 	public MockJobArgs(final Integer i, final Double d, final Boolean b, final String s, final List<Object> l) {
 		this.i = i;
 		this.d = d;
 		this.b = b;
 		this.s = s;
 		this.l = l;
+		MockJobArgs.args = new Object[]{this.i, this.d, this.b, this.s, this.l};
 	}
 
 	@Override
 	public void run() {
 		log.info("MockJobArgs.run() {} {} {} {} {}", new Object[]{this.i, this.d, this.b, this.s, this.l});
 	}
+
+	
 }
