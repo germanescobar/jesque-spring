@@ -39,7 +39,7 @@
 	</bean>
 	
 
-	<bean id="workerImplFactory" class="net.lariverosc.jesquespring.SpringWorkerImplFactory">
+	<bean id="workerFactory" class="net.lariverosc.jesquespring.SpringWorkerFactory">
 		<constructor-arg name="config" ref="jesqueConfig"/>	
 		<constructor-arg name="queues">
 			<util:set set-class="java.util.HashSet">
@@ -56,7 +56,7 @@
 
 
 	<bean id="jesqueWorker" class="net.lariverosc.jesquespring.JesqueWorker" init-method="start" destroy-method="stop">
-		<property name="workerImpl" ref="workerImplFactory"/>
+		<property name="workerFactory" ref="workerFactory"/>
 		<property name="numWorkers" value="1" />
 	</bean>
 

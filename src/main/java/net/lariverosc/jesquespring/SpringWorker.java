@@ -14,9 +14,9 @@ import org.springframework.context.ApplicationContext;
  *
  * @author Alejandro Riveros Cruz <lariverosc@gmail.com>
  */
-public class SpringWorkerImpl extends WorkerImpl {
+public class SpringWorker extends WorkerImpl {
 
-	private Logger logger = LoggerFactory.getLogger(SpringWorkerImpl.class);
+	private Logger logger = LoggerFactory.getLogger(SpringWorker.class);
 	private ApplicationContext applicationContext;
 
 	/**
@@ -26,7 +26,7 @@ public class SpringWorkerImpl extends WorkerImpl {
 	 * @param jobTypes
 	 * @param applicationContext
 	 */
-	public SpringWorkerImpl(final Config config, final Collection<String> queues, final Map<String, ? extends Class<?>> jobTypes, ApplicationContext applicationContext) {
+	public SpringWorker(final Config config, final Collection<String> queues, final Map<String, ? extends Class<?>> jobTypes, ApplicationContext applicationContext) {
 		super(config, queues, jobTypes);
 		this.applicationContext = applicationContext;
 	}

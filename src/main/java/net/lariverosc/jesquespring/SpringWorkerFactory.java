@@ -17,9 +17,9 @@ import org.springframework.context.ApplicationContext;
  *
  * @author Alejandro Riveros Cruz <lariverosc@gmail.com>
  */
-public class SpringWorkerImplFactory implements Callable<WorkerImpl>  {
+public class SpringWorkerFactory implements Callable<WorkerImpl>  {
 
-	private Logger logger = LoggerFactory.getLogger(SpringWorkerImplFactory.class);
+	private Logger logger = LoggerFactory.getLogger(SpringWorkerFactory.class);
 	private final Config config;
 	private final Collection<String> queues;
 	private final Map<String, ? extends Class<?>> jobTypes;
@@ -33,7 +33,7 @@ public class SpringWorkerImplFactory implements Callable<WorkerImpl>  {
 	 * @param queues the list of queues to poll
 	 * @param jobTypes the list of job types to execute
 	 */
-	public SpringWorkerImplFactory(final Config config, final Collection<String> queues, final Map<String, ? extends Class<?>> jobTypes) {
+	public SpringWorkerFactory(final Config config, final Collection<String> queues, final Map<String, ? extends Class<?>> jobTypes) {
 		this.config = config;
 		this.queues = queues;
 		this.jobTypes = jobTypes;
@@ -45,7 +45,7 @@ public class SpringWorkerImplFactory implements Callable<WorkerImpl>  {
 	 */
 	@Override
 	public WorkerImpl call() {
-		WorkerImpl temp = new SpringWorkerImpl(this.config, this.queues, this.jobTypes, this.applicationContext);
+		WorkerImpl temp = new SpringWorker(this.config, this.queues, this.jobTypes, this.applicationContext);
 		temp.addListener(new WorkerListener() {
 			@Override
 			public void onEvent(WorkerEvent event, Worker worker, String queue, net.greghaines.jesque.Job job, Object runner, Object result, Exception ex) {

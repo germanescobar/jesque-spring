@@ -19,7 +19,7 @@ public class JesqueWorker implements ApplicationContextAware {
 	private static final Logger logger = LoggerFactory.getLogger(JesqueWorker.class);
 	private int numWorkers = 1;
 	private Worker worker;
-	private Callable<WorkerImpl> workerImpl;
+	private Callable<WorkerImpl> workerFactory;
 	private ApplicationContext applicationContext;
 
 	/**
@@ -27,10 +27,10 @@ public class JesqueWorker implements ApplicationContextAware {
 	 */
 	public void start() {
 		logger.info("Starting Jesque executor service");
-		if (workerImpl instanceof SpringWorkerImplFactory) {
-			((SpringWorkerImplFactory) workerImpl).setApplicationContext(applicationContext);
+		if (workerFactory instanceof SpringWorkerFactory) {
+			((SpringWorkerFactory) workerFactory).setApplicationContext(applicationContext);
 		}
-		worker = new WorkerPool(workerImpl, numWorkers);
+		worker = new WorkerPool(workerFactory, numWorkers);
 		new Thread(worker).start();
 	}
 
@@ -74,12 +74,12 @@ public class JesqueWorker implements ApplicationContextAware {
 		this.worker = worker;
 	}
 
-	public Callable<WorkerImpl> getWorkerImpl() {
-		return workerImpl;
+	public Callable<WorkerImpl> getWorkerFactory() {
+		return workerFactory;
 	}
 
-	public void setWorkerImpl(Callable<WorkerImpl> workerImpl) {
-		this.workerImpl = workerImpl;
+	public void setWorkerFactory(Callable<WorkerImpl> workerFactory) {
+		this.workerFactory = workerFactory;
 	}
 
 	@Override
