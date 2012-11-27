@@ -27,6 +27,6 @@ public class MockJobArgs implements Runnable {
 
 	@Override
 	public void run() {
-		log.info("TestAction.run() {} {} {} {} {}", new Object[]{this.i, this.d, this.b, this.s, this.l});
+		log.info("MockJobArgs.run() {} {} {} {} {}", new Object[]{this.i, this.d, this.b, this.s, this.l});
 	}
 }

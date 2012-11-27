@@ -3,6 +3,7 @@ package net.lariverosc.jesquespring;
 import java.util.Arrays;
 import net.lariverosc.jesquespring.job.MockJob;
 import net.lariverosc.jesquespring.job.MockJobArgs;
+import net.lariverosc.jesquespring.job.MockJobFail;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.testng.annotations.BeforeClass;
@@ -31,6 +32,12 @@ public class JesqueSpringTest {
 	@Test
 	public void shouldAddJobWithArguments() {
 		jesqueClient.execute(MockJobArgs.class, new Object[]{1, 2.3, true, "test", Arrays.asList("inner", 4.5)});
+		waitJob(5000);
+	}
+	
+	@Test
+	public void shouldFailJob() {
+		jesqueClient.execute(MockJobFail.class, new Object[]{});
 		waitJob(5000);
 	}
 
