@@ -22,12 +22,12 @@ Or use it as a Maven dependency within your project:
 </dependency>
 ```
 
-#Configure jobs within Spring
+##Configure jobs within Spring
 
-The only requirements is that job classes must implement Runnable interface and be configured in Spring with ```scope="prototype"```, so a job configuration looks like this:
+The only requirements is that job classes must implement Runnable interface and must be configured in Spring with ```scope="prototype"```, so a job configuration looks like this:
 
 ```xml
-<bean id="mockJob" class="net.lariverosc.jesquespring.job.MockJob" scope="prototype"/>
+<bean id="mockJobId" class="net.lariverosc.jesquespring.job.MockJob" scope="prototype"/>
 ```
 
 And the job implementation looks like this:
@@ -40,12 +40,9 @@ public class MockJob implements Runnable {
 	}
 }
 ```
+##Define a bean for Jesque general config:
 
-#Spring configuration
-
-The Spring integration can be doing in two ways, depending of your needs you can:
-
-* Define JesqueClient and JesqueWorker as Spring Beans, that executes Jobs that lives outside the Spring context, to accomplish that you need to use the following configuration:
+You need to configure your own parameters:
 
 ```xml
 <bean id="jesqueConfig" class="net.greghaines.jesque.Config">
@@ -56,35 +53,68 @@ The Spring integration can be doing in two ways, depending of your needs you can
 	<constructor-arg value="resque" />
 	<constructor-arg value="0" />
 </bean>
+```
 
-<bean id="jesqueClient" class="net.greghaines.jesque.client.ClientImpl">
-	<constructor-arg name="config"  ref="jesqueConfig"/>
-</bean>
+##Configure the worker within Spring
 
+The Spring integration can be doing in two ways, depending of your needs you can:
+
+###Using the SpringWorker for a single non-pooled thread
+You can add more than one ```QUEUE_NAME``` within the set:
+
+```xml
 <bean id="worker" class="net.lariverosc.jesquespring.SpringWorker" destroy-method="end">
 	<constructor-arg name="config" ref="jesqueConfig"/>	
 	<constructor-arg name="queues">
 		<util:set set-class="java.util.HashSet">
-			<value>JESQUE_QUEUE</value>
+			<value>QUEUE_NAME</value>
+		</util:set>
+	</constructor-arg> 
+</bean>
+```
+
+###Using the SpringWorkerFactory for a multi-threading pooled worker
+You can add more than one ```QUEUE_NAME``` within the set, and also define the number of workers using the ```numWorkers``` parameter:
+```xml
+<bean id="workerFactory" class="net.lariverosc.jesquespring.SpringWorkerFactory">
+	<constructor-arg name="config" ref="jesqueConfig"/>	
+	<constructor-arg name="queues">
+		<util:set set-class="java.util.HashSet">
+			<value>QUEUE_NAME</value>
 		</util:set>
 	</constructor-arg> 
 </bean>
 
+<bean id="worker" class="net.greghaines.jesque.worker.WorkerPool" destroy-method="end">
+	<constructor-arg name="workerFactory" ref="workerFactory"/>
+	<constructor-arg name="numWorkers" value="1" />			
+</bean>
+
+```
+
+##Optional Spring configuration
+
+###Define and start the ```workerThread``` within the Spring context
+```xml
 <bean id="workerThread" class="java.lang.Thread" init-method="start" destroy-method="interrupt">
 	<constructor-arg ref="worker"/>
 </bean>
 ```
 
-* Define JesqueClient and JesqueWorker as Spring Beans, that executes Jobs that lives within the Spring context, to accomplish that you need to change the ```workerImplFactory``` by the following, and also configure the Jobs wthin Spring:
+Or you can start the Thread programmatically making something like:
 
+```java
+Worker worker = (Worker) springApplicationContext.getBean("worker");
+Thread thread = new Thread(worker);
+thread.start();
+```
+
+###Define a JesqueClient within the Spring context
 ```xml
-<bean id="workerImplFactory" class="net.lariverosc.jesquespring.SpringWorkerImplFactory">
-  <constructor-arg name="config" ref="jesqueConfig"/>	
-	<constructor-arg name="queues">
-    <util:set set-class="java.util.HashSet">
-			<value>JESQUE_QUEUE</value>
-		</util:set>
-	</constructor-arg> 
+<bean id="jesqueClient" class="net.greghaines.jesque.client.ClientImpl">
+	<constructor-arg name="config"  ref="jesqueConfig"/>
 </bean>
 ```
+
+
 
