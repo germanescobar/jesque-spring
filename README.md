@@ -40,7 +40,26 @@ public class MockJob implements Runnable {
 	}
 }
 ```
-##Define a bean for Jesque general config:
+
+##Enqueue Jobs
+
+*Using the job ```Class``` type:
+
+```java
+Job job = new Job(MockJob.class.getName(), new Object[]{});
+jesqueClient.enqueue("QUEUE_NAME", job);
+
+```
+
+*Using the job bean ```id``` type:
+
+```java
+Job job = new Job("mockJobId", new Object[]{});
+jesqueClient.enqueue("QUEUE_NAME", job);
+
+```
+
+##Define a bean for Jesque general configuration:
 
 You need to configure your own parameters:
 
