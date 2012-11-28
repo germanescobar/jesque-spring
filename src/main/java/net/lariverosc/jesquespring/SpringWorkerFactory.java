@@ -34,10 +34,11 @@ public class SpringWorkerFactory implements Callable<WorkerImpl>, ApplicationCon
 
 
 	/**
-	 * Create a new <code>SpringWorkerImpl</code> using the arguments provided in the factory constructor.
+	 * Create a new <code>SpringWorker</code> using the arguments provided in the factory constructor.
 	 */
 	@Override
 	public WorkerImpl call() {
+		logger.info("Create new Spring Worker");
 		WorkerImpl springWorker = new SpringWorker(this.config, this.queues);
 		((SpringWorker) springWorker).setApplicationContext(this.applicationContext);
 		return springWorker;

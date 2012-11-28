@@ -32,6 +32,7 @@ public class SpringWorker extends WorkerImpl implements ApplicationContextAware 
 
 	@Override
 	protected void process(final Job job, final String curQueue) {
+		logger.info("Process new Job from queue {}" + curQueue);
 		try {
 			Runnable runnableJob = null;
 			if (applicationContext.containsBeanDefinition(job.getClassName())) {//Lookup by bean Id
