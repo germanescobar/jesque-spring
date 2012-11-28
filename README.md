@@ -43,7 +43,7 @@ public class MockJob implements Runnable {
 
 ##Enqueue Jobs
 
-*Using the job ```Class``` type:
+Using the job ```Class``` type:
 
 ```java
 Job job = new Job(MockJob.class.getName(), new Object[]{});
@@ -51,7 +51,7 @@ jesqueClient.enqueue("QUEUE_NAME", job);
 
 ```
 
-*Using the job bean ```id``` type:
+Using the job bean ```id``` type:
 
 ```java
 Job job = new Job("mockJobId", new Object[]{});
@@ -128,14 +128,5 @@ Worker worker = (Worker) springApplicationContext.getBean("worker");
 Thread thread = new Thread(worker);
 thread.start();
 ```
-##Optional Spring configuration
-
-###Define a JesqueClient within the Spring context
-```xml
-<bean id="jesqueClient" class="net.greghaines.jesque.client.ClientImpl">
-	<constructor-arg name="config"  ref="jesqueConfig"/>
-</bean>
-```
-
 
 
