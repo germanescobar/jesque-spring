@@ -1,12 +1,12 @@
 Jesque-Spring
 =============
 
-An extension for Jesque that allows interoperability with Spring the Java framework, the integration was designed thingking in two objectives:
+An extension for Jesque that allows interoperability with Spring the Java framework, the main objective of this extension is build an SpringWorker that allows the execution of jobs that are configured as Spring managed components. 
 
-1. Build an implememtation of JesqueClient and JesqueWorker that will be managed by Spring, and available within the Spring context for dependecy injection.
-2. Allow the JesqueWorker to execute jobs that are configured as Spring beans. 
+This extension provide the implemetation of a SpringWorker that performs a lookup within the Spring context to obtain jobs instances, the lookup strategy can found beans either by the bean ```id``` or ```Class``` type.
 
-Usage
+
+How do I use it?
 ----------------
 Download the latest source at:
 
@@ -22,8 +22,26 @@ Or use it as a Maven dependency within your project:
 </dependency>
 ```
 
-Spring configuration
-----------------
+#Configure jobs within Spring
+
+The only requirements is that job classes must implement Runnable interface and be configured in Spring with ```scope="prototype"```, so a job configuration looks like this:
+
+```xml
+<bean id="mockJob" class="net.lariverosc.jesquespring.job.MockJob" scope="prototype"/>
+```
+
+And the job implementation looks like this:
+
+```java
+public class MockJob implements Runnable {
+	@Override
+	public void run() {
+     //do something
+	}
+}
+```
+
+#Spring configuration
 
 The Spring integration can be doing in two ways, depending of your needs you can:
 
@@ -31,40 +49,29 @@ The Spring integration can be doing in two ways, depending of your needs you can
 
 ```xml
 <bean id="jesqueConfig" class="net.greghaines.jesque.Config">
-	<constructor-arg value="${redis.host}" />
-	<constructor-arg value="${redis.port}" />
-	<constructor-arg value="${redis.timeout}" />
-	<constructor-arg value="${redis.password}" />
-	<constructor-arg value="${redis.namespace:resque}" />
-	<constructor-arg value="${redis.database:0}" />
+	<constructor-arg value="localhost" />
+	<constructor-arg value="6379" />
+	<constructor-arg value="2000" />
+	<constructor-arg value="" />
+	<constructor-arg value="resque" />
+	<constructor-arg value="0" />
 </bean>
 
-<bean id="jesqueClient" class="net.lariverosc.jesquespring.JesqueClient">
+<bean id="jesqueClient" class="net.greghaines.jesque.client.ClientImpl">
 	<constructor-arg name="config"  ref="jesqueConfig"/>
 </bean>
 
-<bean id="workerImplFactory" class="net.greghaines.jesque.worker.WorkerImplFactory">
-  <constructor-arg name="config" ref="jesqueConfig"/>  
+<bean id="worker" class="net.lariverosc.jesquespring.SpringWorker" destroy-method="end">
+	<constructor-arg name="config" ref="jesqueConfig"/>	
 	<constructor-arg name="queues">
-    <util:set set-class="java.util.HashSet">
+		<util:set set-class="java.util.HashSet">
 			<value>JESQUE_QUEUE</value>
 		</util:set>
-	</constructor-arg>
-	<constructor-arg name="jobTypes">
-		<util:map map-class="java.util.HashMap">
-			<entry>
-				<key >
-					<value type="java.lang.String">testAction</value>
-				</key>
-				<value type="java.lang.Class">net.lariverosc.jesquespring.job.MockJob</value>
-			</entry>
-		</util:map>
-	</constructor-arg>
+	</constructor-arg> 
 </bean>
 
-<bean id="jesqueWorker" class="net.lariverosc.jesquespring.JesqueWorker" init-method="start" destroy-method="stop">
-	<property name="workerImpl" ref="workerImplFactory"/>
-	<property name="numWorkers" value="1" />
+<bean id="workerThread" class="java.lang.Thread" init-method="start" destroy-method="interrupt">
+	<constructor-arg ref="worker"/>
 </bean>
 ```
 
@@ -81,21 +88,3 @@ The Spring integration can be doing in two ways, depending of your needs you can
 </bean>
 ```
 
-#Configure jobs within Spring
-
-The only one requirement is that job classes must implement Runnable interface, and be configured in Spring with ```scope="prototype"```, so a job configuration looks like this:
-
-```xml
-<bean id="mockJob" class="net.lariverosc.jesquespring.job.MockJob" scope="prototype"/>
-```
-
-And the job implementation looks like this:
-
-```java
-public class MockJob implements Runnable {
-	@Override
-	public void run() {
-     //do something
-	}
-}
-```
