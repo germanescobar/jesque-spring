@@ -92,9 +92,10 @@ You can add more than one ```QUEUE_NAME``` within the set, and also define the n
 
 ```
 
-##Optional Spring configuration
+##Start the workerThread
 
-###Define and start the ```workerThread``` within the Spring context
+You can start the ```workerThread``` within the Spring context adding the following bean definition::
+
 ```xml
 <bean id="workerThread" class="java.lang.Thread" init-method="start" destroy-method="interrupt">
 	<constructor-arg ref="worker"/>
@@ -108,6 +109,7 @@ Worker worker = (Worker) springApplicationContext.getBean("worker");
 Thread thread = new Thread(worker);
 thread.start();
 ```
+##Optional Spring configuration
 
 ###Define a JesqueClient within the Spring context
 ```xml
