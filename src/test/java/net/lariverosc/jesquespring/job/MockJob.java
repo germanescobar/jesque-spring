@@ -6,9 +6,6 @@ package net.lariverosc.jesquespring.job;
  */
 public class MockJob implements Runnable {
 
-	/**
-	 *
-	 */
 	public static int JOB_COUNT = 0;
 
 	@Override

@@ -33,9 +33,6 @@ public class JesqueSpringTest {
 	private WorkerInfoDAO workerInfoDAO;
 	private JedisPool jedisPool;
 
-	/**
-	 *
-	 */
 	@BeforeClass
 	public void setUp() {
 		ApplicationContext applicationContext = new ClassPathXmlApplicationContext("classpath:test-context.xml");
@@ -48,9 +45,6 @@ public class JesqueSpringTest {
 		jedisPool = (JedisPool) applicationContext.getBean("jedisPool");
 	}
 
-	/**
-	 *
-	 */
 	@BeforeMethod
 	public void cleanUpRedis() {
 		worker.togglePause(false);
@@ -59,9 +53,6 @@ public class JesqueSpringTest {
 		jedisPool.returnResource(jedis);
 	}
 
-	/**
-	 *
-	 */
 	@Test
 	public void shouldAddJob() {
 		worker.togglePause(true);
@@ -76,9 +67,6 @@ public class JesqueSpringTest {
 		waitJob(5000);
 	}
 
-	/**
-	 *
-	 */
 	@Test(timeOut = 5000)
 	public void shouldProcessJobsByClass() {
 		worker.togglePause(true);
@@ -107,9 +95,6 @@ public class JesqueSpringTest {
 		Assert.assertEquals(10, MockJob.JOB_COUNT);
 	}
 
-	/**
-	 *
-	 */
 	@Test
 	public void shouldAddJobWithArguments() {
 		worker.togglePause(true);
@@ -120,9 +105,6 @@ public class JesqueSpringTest {
 
 	}
 
-	/**
-	 *
-	 */
 	@Test
 	public void shouldAddJobWithEmptyArguments() {
 		worker.togglePause(true);
@@ -132,9 +114,6 @@ public class JesqueSpringTest {
 
 	}
 
-	/**
-	 *
-	 */
 	@Test
 	public void shouldRegisterFailJob() {
 		Job job = new Job(MockJobFail.class.getName(), new Object[]{});
@@ -143,10 +122,6 @@ public class JesqueSpringTest {
 		Assert.assertEquals(1, failureDAO.getCount());
 	}
 
-	/**
-	 *
-	 * @param milliseconds
-	 */
 	public void waitJob(long milliseconds) {
 		try {
 			Thread.sleep(milliseconds);
