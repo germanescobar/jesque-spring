@@ -43,7 +43,7 @@
 		</constructor-arg> 
 	</bean>
 
-<!--	<bean id="worker" class="net.lariverosc.jesquespring.SpringWorker" destroy-method="end">
+<!--	<bean id="worker" class="net.lariverosc.jesquespring.SpringWorker" init-method="init" destroy-method="destroy">
 		<constructor-arg name="config" ref="jesqueConfig"/>	
 		<constructor-arg name="queues">
 			<util:set set-class="java.util.HashSet">
@@ -52,14 +52,11 @@
 		</constructor-arg> 
 	</bean>-->
 
-	<bean id="worker" class="net.greghaines.jesque.worker.WorkerPool" destroy-method="end">
+	<bean id="worker" class="net.lariverosc.jesquespring.SpringWorkerPool" init-method="init" destroy-method="destroy">
 		<constructor-arg name="workerFactory" ref="workerFactory"/>
 		<constructor-arg name="numWorkers" value="1" />
 	</bean>
 
-	<bean id="workerThread" class="java.lang.Thread" init-method="start" destroy-method="interrupt">
-		<constructor-arg ref="worker"/>
-	</bean>
 
 	<!--Test jobs definitions-->
 	<bean id="mockJob" class="net.lariverosc.jesquespring.job.MockJob" scope="prototype"/>
