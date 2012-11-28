@@ -1,7 +1,6 @@
 package net.lariverosc.jesquespring;
 
 import java.util.Collection;
-import java.util.Map;
 import java.util.concurrent.Callable;
 import net.greghaines.jesque.Config;
 import net.greghaines.jesque.worker.Worker;
@@ -12,17 +11,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 
 /**
  *
  * @author Alejandro Riveros Cruz <lariverosc@gmail.com>
  */
-public class SpringWorkerFactory implements Callable<WorkerImpl>  {
+public class SpringWorkerFactory implements Callable<WorkerImpl>, ApplicationContextAware {
 
 	private Logger logger = LoggerFactory.getLogger(SpringWorkerFactory.class);
 	private final Config config;
 	private final Collection<String> queues;
-	private final Map<String, ? extends Class<?>> jobTypes;
 	private ApplicationContext applicationContext;
 
 	/**
@@ -33,11 +32,11 @@ public class SpringWorkerFactory implements Callable<WorkerImpl>  {
 	 * @param queues the list of queues to poll
 	 * @param jobTypes the list of job types to execute
 	 */
-	public SpringWorkerFactory(final Config config, final Collection<String> queues, final Map<String, ? extends Class<?>> jobTypes) {
+	public SpringWorkerFactory(final Config config, final Collection<String> queues) {
 		this.config = config;
 		this.queues = queues;
-		this.jobTypes = jobTypes;
 	}
+
 
 	/**
 	 * Create a new
@@ -45,8 +44,9 @@ public class SpringWorkerFactory implements Callable<WorkerImpl>  {
 	 */
 	@Override
 	public WorkerImpl call() {
-		WorkerImpl temp = new SpringWorker(this.config, this.queues, this.jobTypes, this.applicationContext);
-		temp.addListener(new WorkerListener() {
+		WorkerImpl springWorker = new SpringWorker(this.config, this.queues);
+		((SpringWorker) springWorker).setApplicationContext(this.applicationContext);
+		springWorker.addListener(new WorkerListener() {
 			@Override
 			public void onEvent(WorkerEvent event, Worker worker, String queue, net.greghaines.jesque.Job job, Object runner, Object result, Exception ex) {
 				logger.debug("event {}, worker {}, queue {}", new Object[]{event.name(), worker.getName(), queue});
@@ -70,14 +70,17 @@ public class SpringWorkerFactory implements Callable<WorkerImpl>  {
 				}
 			}
 		});
-		return temp;
+		return springWorker;
 	}
+
+	
 
 	/**
 	 *
 	 * @param applicationContext
 	 * @throws BeansException
 	 */
+	@Override
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
 		this.applicationContext = applicationContext;
 	}

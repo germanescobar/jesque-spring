@@ -1,20 +1,26 @@
 package net.lariverosc.jesquespring;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 import net.greghaines.jesque.Config;
 import net.greghaines.jesque.Job;
+import net.greghaines.jesque.worker.Worker;
+import net.greghaines.jesque.worker.WorkerEvent;
 import static net.greghaines.jesque.worker.WorkerEvent.JOB_PROCESS;
 import net.greghaines.jesque.worker.WorkerImpl;
+import net.greghaines.jesque.worker.WorkerListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 
 /**
  *
  * @author Alejandro Riveros Cruz <lariverosc@gmail.com>
  */
-public class SpringWorker extends WorkerImpl {
+public class SpringWorker extends WorkerImpl implements ApplicationContextAware {
 
 	private Logger logger = LoggerFactory.getLogger(SpringWorker.class);
 	private ApplicationContext applicationContext;
@@ -26,11 +32,35 @@ public class SpringWorker extends WorkerImpl {
 	 * @param jobTypes
 	 * @param applicationContext
 	 */
-	public SpringWorker(final Config config, final Collection<String> queues, final Map<String, ? extends Class<?>> jobTypes, ApplicationContext applicationContext) {
-		super(config, queues, jobTypes);
-		this.applicationContext = applicationContext;
+	public SpringWorker(final Config config, final Collection<String> queues) {
+		super(config, queues, Collections.EMPTY_MAP);
+		this.addListener(new WorkerListener() {
+			@Override
+			public void onEvent(WorkerEvent event, Worker worker, String queue, net.greghaines.jesque.Job job, Object runner, Object result, Exception ex) {
+				logger.debug("event {}, worker {}, queue {}", new Object[]{event.name(), worker.getName(), queue});
+				switch (event) {
+					case JOB_EXECUTE:
+						break;
+					case JOB_FAILURE:
+						break;
+					case JOB_PROCESS:
+						break;
+					case JOB_SUCCESS:
+						break;
+					case WORKER_ERROR:
+						break;
+					case WORKER_POLL:
+						break;
+					case WORKER_START:
+						break;
+					case WORKER_STOP:
+						break;
+				}
+			}
+		});
 	}
 
+	
 	@Override
 	protected void process(final Job job, final String curQueue) {
 		try {
@@ -63,5 +93,10 @@ public class SpringWorker extends WorkerImpl {
 		} catch (Exception e) {
 			failure(e, job, curQueue);
 		}
+	}
+
+	@Override
+	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+		this.applicationContext = applicationContext;
 	}
 }

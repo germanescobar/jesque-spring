@@ -30,14 +30,9 @@
 		<constructor-arg value="${redis.database}" />
 	</bean>
 
-
-
-
-
 	<bean id="jesqueClient" class="net.greghaines.jesque.client.ClientImpl">
 		<constructor-arg name="config"  ref="jesqueConfig"/>
 	</bean>
-	
 
 	<bean id="workerFactory" class="net.lariverosc.jesquespring.SpringWorkerFactory">
 		<constructor-arg name="config" ref="jesqueConfig"/>	
@@ -46,23 +41,25 @@
 				<value>JESQUE_QUEUE</value>
 			</util:set>
 		</constructor-arg> 
-		<constructor-arg name="jobTypes">
-			<util:map map-class="java.util.HashMap">
-				<!--<entry key="pechorin" value="pechorin@hero.org"/>-->
-			</util:map>
-		</constructor-arg>
 	</bean>
 
-
-
-	<bean id="jesqueWorker" class="net.lariverosc.jesquespring.JesqueWorker" init-method="start" destroy-method="stop">
-		<property name="workerFactory" ref="workerFactory"/>
-		<property name="numWorkers" value="1" />
+	<bean id="worker" class="net.lariverosc.jesquespring.SpringWorker" destroy-method="end">
+		<constructor-arg name="config" ref="jesqueConfig"/>	
+		<constructor-arg name="queues">
+			<util:set set-class="java.util.HashSet">
+				<value>JESQUE_QUEUE</value>
+			</util:set>
+		</constructor-arg> 
 	</bean>
 
+<!--	<bean id="worker" class="net.greghaines.jesque.worker.WorkerPool" destroy-method="end">
+		<constructor-arg name="workerFactory" ref="workerFactory"/>
+		<constructor-arg name="numWorkers" value="1" />
+	</bean>-->
 
-
-
+	<bean id="workerThread" class="java.lang.Thread" init-method="start" destroy-method="interrupt">
+		<constructor-arg ref="worker"/>
+	</bean>
 
 	<!--Test jobs definitions-->
 	<bean id="mockJob" class="net.lariverosc.jesquespring.job.MockJob" scope="prototype"/>

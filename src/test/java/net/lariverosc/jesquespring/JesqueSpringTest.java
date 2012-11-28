@@ -8,6 +8,7 @@ import net.greghaines.jesque.meta.dao.FailureDAO;
 import net.greghaines.jesque.meta.dao.KeysDAO;
 import net.greghaines.jesque.meta.dao.QueueInfoDAO;
 import net.greghaines.jesque.meta.dao.WorkerInfoDAO;
+import net.greghaines.jesque.worker.Worker;
 import net.lariverosc.jesquespring.job.MockJob;
 import net.lariverosc.jesquespring.job.MockJobFail;
 import org.springframework.context.ApplicationContext;
@@ -25,7 +26,7 @@ import redis.clients.jedis.JedisPool;
 public class JesqueSpringTest {
 
 	private Client jesqueClient;
-	private JesqueWorker jesqueWorker;
+	private Worker worker;
 	private FailureDAO failureDAO;
 	private KeysDAO keysDAO;
 	private QueueInfoDAO queueInfoDAO;
@@ -39,7 +40,7 @@ public class JesqueSpringTest {
 	public void setUp() {
 		ApplicationContext applicationContext = new ClassPathXmlApplicationContext("classpath:test-context.xml");
 		jesqueClient = (Client) applicationContext.getBean("jesqueClient");
-		jesqueWorker = (JesqueWorker) applicationContext.getBean("jesqueWorker");
+		worker = (Worker) applicationContext.getBean("worker");
 		failureDAO = (FailureDAO) applicationContext.getBean("failureDAO");
 		keysDAO = (KeysDAO) applicationContext.getBean("keysDAO");
 		queueInfoDAO = (QueueInfoDAO) applicationContext.getBean("queueInfoDAO");
@@ -52,7 +53,7 @@ public class JesqueSpringTest {
 	 */
 	@BeforeMethod
 	public void cleanUpRedis() {
-		jesqueWorker.getWorker().togglePause(false);
+		worker.togglePause(false);
 		Jedis jedis = jedisPool.getResource();
 		jedis.flushDB();
 		jedisPool.returnResource(jedis);
@@ -63,7 +64,7 @@ public class JesqueSpringTest {
 	 */
 	@Test
 	public void shouldAddJob() {
-		jesqueWorker.getWorker().togglePause(true);
+		worker.togglePause(true);
 		Assert.assertEquals(0, queueInfoDAO.getPendingCount());
 		MockJob.JOB_COUNT = 0;
 		Job job = new Job(MockJob.class.getName(), new Object[]{});
@@ -71,7 +72,7 @@ public class JesqueSpringTest {
 			jesqueClient.enqueue("JESQUE_QUEUE", job);
 			Assert.assertEquals(i, queueInfoDAO.getPendingCount());
 		}
-		jesqueWorker.getWorker().togglePause(false);
+		worker.togglePause(false);
 		waitJob(5000);
 	}
 
@@ -80,28 +81,28 @@ public class JesqueSpringTest {
 	 */
 	@Test(timeOut = 5000)
 	public void shouldProcessJobsByClass() {
-		jesqueWorker.getWorker().togglePause(true);
+		worker.togglePause(true);
 		Assert.assertEquals(0, queueInfoDAO.getPendingCount());
 		MockJob.JOB_COUNT = 0;
 		Job job = new Job(MockJob.class.getName(), new Object[]{});
 		for (int i = 1; i <= 10; i++) {
 			jesqueClient.enqueue("JESQUE_QUEUE", job);
 		}
-		jesqueWorker.getWorker().togglePause(false);
+		worker.togglePause(false);
 		waitJob(3000);
 		Assert.assertEquals(10, MockJob.JOB_COUNT);
 	}
 
 	@Test(timeOut = 5000)
 	public void shouldProcessJobsByBeanId() {
-		jesqueWorker.getWorker().togglePause(true);
+		worker.togglePause(true);
 		Assert.assertEquals(0, queueInfoDAO.getPendingCount());
 		MockJob.JOB_COUNT = 0;
 		Job job = new Job("mockJob", new Object[]{});
 		for (int i = 1; i <= 10; i++) {
 			jesqueClient.enqueue("JESQUE_QUEUE", job);
 		}
-		jesqueWorker.getWorker().togglePause(false);
+		worker.togglePause(false);
 		waitJob(3000);
 		Assert.assertEquals(10, MockJob.JOB_COUNT);
 	}
@@ -111,11 +112,11 @@ public class JesqueSpringTest {
 	 */
 	@Test
 	public void shouldAddJobWithArguments() {
-		jesqueWorker.getWorker().togglePause(true);
+		worker.togglePause(true);
 		Object[] args = new Object[]{1, 2.3, true, "test", Arrays.asList("inner", 4.5)};
 		Job job = new Job(MockJob.class.getName(), args);
 		jesqueClient.enqueue("JESQUE_QUEUE", job);
-		jesqueWorker.getWorker().togglePause(false);
+		worker.togglePause(false);
 
 	}
 
@@ -124,10 +125,10 @@ public class JesqueSpringTest {
 	 */
 	@Test
 	public void shouldAddJobWithEmptyArguments() {
-		jesqueWorker.getWorker().togglePause(true);
+		worker.togglePause(true);
 		Job job = new Job(MockJob.class.getName(), new Object[]{});
 		jesqueClient.enqueue("JESQUE_QUEUE", job);
-		jesqueWorker.getWorker().togglePause(false);
+		worker.togglePause(false);
 
 	}
 
