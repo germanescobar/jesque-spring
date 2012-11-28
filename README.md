@@ -82,7 +82,7 @@ The Spring integration can be doing in two ways, depending of your needs you can
 You can add more than one ```QUEUE_NAME``` within the set:
 
 ```xml
-<bean id="worker" class="net.lariverosc.jesquespring.SpringWorker" destroy-method="end">
+<bean id="worker" class="net.lariverosc.jesquespring.SpringWorker" init-method="init" destroy-method="destroy">
 	<constructor-arg name="config" ref="jesqueConfig"/>	
 	<constructor-arg name="queues">
 		<util:set set-class="java.util.HashSet">
@@ -104,29 +104,9 @@ You can add more than one ```QUEUE_NAME``` within the set, and also define the n
 	</constructor-arg> 
 </bean>
 
-<bean id="worker" class="net.greghaines.jesque.worker.WorkerPool" destroy-method="end">
+<bean id="worker" class="net.lariverosc.jesquespring.SpringWorkerPool" init-method="init" destroy-method="destroy">
 	<constructor-arg name="workerFactory" ref="workerFactory"/>
 	<constructor-arg name="numWorkers" value="1" />			
 </bean>
 
 ```
-
-##Start the workerThread
-
-You can start the ```workerThread``` within the Spring context adding the following bean definition::
-
-```xml
-<bean id="workerThread" class="java.lang.Thread" init-method="start" destroy-method="interrupt">
-	<constructor-arg ref="worker"/>
-</bean>
-```
-
-Or you can start the Thread programmatically making something like:
-
-```java
-Worker worker = (Worker) springApplicationContext.getBean("worker");
-Thread thread = new Thread(worker);
-thread.start();
-```
-
-
