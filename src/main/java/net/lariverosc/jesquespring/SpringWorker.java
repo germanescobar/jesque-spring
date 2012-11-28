@@ -23,27 +23,24 @@ public class SpringWorker extends WorkerImpl implements ApplicationContextAware 
 
 	/**
 	 *
-	 * @param config
-	 * @param queues
-	 * @param jobTypes
-	 * @param applicationContext
+	 * @param config used to create a connection to Redis
+	 * @param queues the list of queues to poll
 	 */
 	public SpringWorker(final Config config, final Collection<String> queues) {
 		super(config, queues, Collections.EMPTY_MAP);
 	}
 
-	
 	@Override
 	protected void process(final Job job, final String curQueue) {
 		try {
 			Runnable runnableJob = null;
-			if (applicationContext.containsBeanDefinition(job.getClassName())) {
+			if (applicationContext.containsBeanDefinition(job.getClassName())) {//Lookup by bean Id
 				runnableJob = (Runnable) applicationContext.getBean(job.getClassName(), job.getArgs());
 			} else {
 				try {
-					Class clazz = Class.forName(job.getClassName());
+					Class clazz = Class.forName(job.getClassName());//Lookup by Class type
 					String[] beanNames = applicationContext.getBeanNamesForType(clazz, true, false);
-					if (applicationContext.containsBeanDefinition(job.getClassName())) {//check bean id
+					if (applicationContext.containsBeanDefinition(job.getClassName())) {
 						runnableJob = (Runnable) applicationContext.getBean(beanNames[0], job.getArgs());
 					} else {
 						if (beanNames != null && beanNames.length == 1) {
@@ -51,8 +48,8 @@ public class SpringWorker extends WorkerImpl implements ApplicationContextAware 
 						}
 					}
 				} catch (ClassNotFoundException cnfe) {
-					logger.error("Not beanId or class definition found {}", job.getClassName());
-					throw new Exception("Not beanId or class definition found " + job.getClassName());
+					logger.error("Not bean Id or class definition found {}", job.getClassName());
+					throw new Exception("Not bean Id or class definition found " + job.getClassName());
 				}
 			}
 			if (runnableJob != null) {

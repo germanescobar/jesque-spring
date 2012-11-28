@@ -22,12 +22,10 @@ public class SpringWorkerFactory implements Callable<WorkerImpl>, ApplicationCon
 	private ApplicationContext applicationContext;
 
 	/**
-	 * Create a new factory. Returned
-	 * <code>WorkerImpl</code>s will use the provided arguments.
+	 * Creates a new factory for <code>SpringWorker</code> that use the provided arguments.
 	 *
 	 * @param config used to create a connection to Redis
 	 * @param queues the list of queues to poll
-	 * @param jobTypes the list of job types to execute
 	 */
 	public SpringWorkerFactory(final Config config, final Collection<String> queues) {
 		this.config = config;
@@ -36,8 +34,7 @@ public class SpringWorkerFactory implements Callable<WorkerImpl>, ApplicationCon
 
 
 	/**
-	 * Create a new
-	 * <code>SpringWorkerImpl</code> using the arguments provided to this factory's constructor.
+	 * Create a new <code>SpringWorkerImpl</code> using the arguments provided in the factory constructor.
 	 */
 	@Override
 	public WorkerImpl call() {
@@ -47,12 +44,6 @@ public class SpringWorkerFactory implements Callable<WorkerImpl>, ApplicationCon
 	}
 
 	
-
-	/**
-	 *
-	 * @param applicationContext
-	 * @throws BeansException
-	 */
 	@Override
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
 		this.applicationContext = applicationContext;
