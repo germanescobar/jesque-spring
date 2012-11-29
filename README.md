@@ -1,6 +1,6 @@
 Jesque-Spring
 =============
-[![Build Status](https://lariverosc.ci.cloudbees.com/job/jesque-spring/badge/icon)](https://lariverosc.ci.cloudbees.com/job/jesque-spring/)
+[![Build Status](https://buildhive.cloudbees.com/job/lariverosc/job/jesque-spring/badge/icon)](https://buildhive.cloudbees.com/job/lariverosc/job/jesque-spring/)
 
 An extension for Jesque that allows interoperability with Spring the Java framework, the main objective of this extension is build an SpringWorker that allows the execution of jobs that are configured as Spring managed components. 
 
